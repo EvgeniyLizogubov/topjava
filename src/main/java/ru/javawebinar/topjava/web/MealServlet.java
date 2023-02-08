@@ -1,8 +1,8 @@
 package ru.javawebinar.topjava.web;
 
 import org.slf4j.Logger;
-import ru.javawebinar.topjava.dao.MemoryDao;
-import ru.javawebinar.topjava.dao.MealMemoryDao;
+import ru.javawebinar.topjava.dao.MealDao;
+import ru.javawebinar.topjava.dao.MemoryMealDao;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.model.MealTo;
 import ru.javawebinar.topjava.util.MealsUtil;
@@ -26,65 +26,85 @@ public class MealServlet extends HttpServlet {
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
     private static final String INSERT_OR_EDIT = "/meal.jsp";
     private static final String LIST_MEALS = "/meals.jsp";
-    private final MemoryDao memoryDao;
+    private MealDao mealDao;
 
-    public MealServlet() {
-        super();
-        memoryDao = new MealMemoryDao();
+    public void init() {
+        mealDao = new MemoryMealDao();
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         log.debug("redirect to meals");
-        String forward;
         String action = request.getParameter("action");
         if (action == null) action = "listUser";
-
-        if (action.equalsIgnoreCase("delete")) {
-            int mealId = Integer.parseInt(request.getParameter("mealId"));
-            memoryDao.delete(mealId);
-            forward = LIST_MEALS;
-            List<MealTo> mealsTo = MealsUtil.filteredByStreams(memoryDao.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY);
-            request.setAttribute("mealsTo", mealsTo);
-            request.setAttribute("dateTimeFormatter", DATE_TIME_FORMATTER);
-        } else if (action.equalsIgnoreCase("edit")) {
-            int mealId = Integer.parseInt(request.getParameter("mealId"));
-            Meal meal = memoryDao.getById(mealId);
-            forward = INSERT_OR_EDIT;
-            request.setAttribute("meal", meal);
-        } else if (action.equalsIgnoreCase("insert")) {
-            forward = INSERT_OR_EDIT;
-        } else if (action.equalsIgnoreCase("listUser")) {
-            forward = LIST_MEALS;
-            List<MealTo> mealsTo = MealsUtil.filteredByStreams(memoryDao.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY);
-            request.setAttribute("mealsTo", mealsTo);
-            request.setAttribute("dateTimeFormatter", DATE_TIME_FORMATTER);
-        } else {
-            forward = INSERT_OR_EDIT;
+        switch (action) {
+            case "delete":
+                log.debug("'Delete' selected");
+                delete(request, response);
+                break;
+            case "edit":
+                log.debug("'Edit' selected");
+                edit(request, response);
+                break;
+            case "insert":
+                log.debug("'Add meal' selected");
+                insert(request, response);
+            default:
+                log.debug("trying to load meal's list");
+                showListMeals(request, response);
         }
-
-        request.getRequestDispatcher(forward).forward(request, response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        log.debug("redirect to meal");
         request.setCharacterEncoding("UTF-8");
-        LocalDateTime localDateTime = LocalDateTime.parse(request.getParameter("dob"));
+        LocalDateTime localDateTime = LocalDateTime.parse(request.getParameter("dateTime"));
         String description = request.getParameter("description");
         int calories = Integer.parseInt(request.getParameter("calories"));
 
         Meal meal = new Meal(localDateTime, description, calories);
-        String mealId = request.getParameter("mealId");
-        if (mealId == null || mealId.isEmpty()) {
-            memoryDao.add(meal);
+        String id = getIdParameter(request);
+        if (id == null || id.isEmpty()) {
+            log.debug("trying to add new meal");
+            mealDao.add(meal);
         } else {
-            meal.setId(Integer.parseInt(mealId));
-            memoryDao.edit(meal);
+            meal.setId(Integer.parseInt(id));
+            log.debug("trying to edit meal");
+            mealDao.edit(meal);
         }
 
-        List<MealTo> mealsTo = MealsUtil.filteredByStreams(memoryDao.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY);
+        response.sendRedirect("meals");
+    }
+
+    private void delete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        int id = Integer.parseInt(getIdParameter(request));
+        log.debug("trying to delete meal");
+        mealDao.delete(id);
+        response.sendRedirect("meals");
+    }
+
+    private void edit(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        int id = Integer.parseInt(getIdParameter(request));
+        Meal meal = mealDao.getById(id);
+        request.setAttribute("meal", meal);
+        request.getRequestDispatcher(INSERT_OR_EDIT).forward(request, response);
+    }
+
+    private void insert(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        request.setAttribute("currentDateTime", LocalDateTime.now());
+        request.setAttribute("dateTimeFormatter", DATE_TIME_FORMATTER);
+        request.getRequestDispatcher(INSERT_OR_EDIT).forward(request, response);
+    }
+
+    private void showListMeals(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        List<MealTo> mealsTo = MealsUtil.filteredByStreams(mealDao.getAll(), LocalTime.MIN, LocalTime.MAX, CALORIES_PER_DAY);
         request.setAttribute("mealsTo", mealsTo);
         request.setAttribute("dateTimeFormatter", DATE_TIME_FORMATTER);
         request.getRequestDispatcher(LIST_MEALS).forward(request, response);
+    }
+
+    private String getIdParameter(HttpServletRequest request) {
+        return request.getParameter("id");
     }
 }
