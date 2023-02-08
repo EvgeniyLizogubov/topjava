@@ -20,7 +20,6 @@ import java.util.List;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class MealServlet extends HttpServlet {
-
     private static final Logger log = getLogger(MealServlet.class);
     private static final int CALORIES_PER_DAY = 2000;
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -49,46 +48,30 @@ public class MealServlet extends HttpServlet {
             case "insert":
                 log.debug("'Add meal' selected");
                 insert(request, response);
+                break;
             default:
                 log.debug("trying to load meal's list");
                 showListMeals(request, response);
+                break;
         }
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        log.debug("redirect to meal");
-        request.setCharacterEncoding("UTF-8");
-        LocalDateTime localDateTime = LocalDateTime.parse(request.getParameter("dateTime"));
-        String description = request.getParameter("description");
-        int calories = Integer.parseInt(request.getParameter("calories"));
-
-        Meal meal = new Meal(localDateTime, description, calories);
-        String id = getIdParameter(request);
-        if (id == null || id.isEmpty()) {
-            log.debug("trying to add new meal");
-            mealDao.add(meal);
-        } else {
-            meal.setId(Integer.parseInt(id));
-            log.debug("trying to edit meal");
-            mealDao.edit(meal);
-        }
-
-        response.sendRedirect("meals");
     }
 
     private void delete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        int id = Integer.parseInt(getIdParameter(request));
+        int id = getIdParameter(request);
         log.debug("trying to delete meal");
         mealDao.delete(id);
         response.sendRedirect("meals");
     }
 
     private void edit(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        int id = Integer.parseInt(getIdParameter(request));
+        int id = getIdParameter(request);
         Meal meal = mealDao.getById(id);
         request.setAttribute("meal", meal);
         request.getRequestDispatcher(INSERT_OR_EDIT).forward(request, response);
+    }
+
+    private int getIdParameter(HttpServletRequest request) {
+        return Integer.parseInt(request.getParameter("id"));
     }
 
     private void insert(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -104,7 +87,25 @@ public class MealServlet extends HttpServlet {
         request.getRequestDispatcher(LIST_MEALS).forward(request, response);
     }
 
-    private String getIdParameter(HttpServletRequest request) {
-        return request.getParameter("id");
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        log.debug("redirect to meal");
+        request.setCharacterEncoding("UTF-8");
+        LocalDateTime localDateTime = LocalDateTime.parse(request.getParameter("dateTime"));
+        String description = request.getParameter("description");
+        int calories = Integer.parseInt(request.getParameter("calories"));
+
+        Meal meal = new Meal(localDateTime, description, calories);
+        String id = request.getParameter("id");
+        if (id == null || id.isEmpty()) {
+            log.debug("trying to add new meal");
+            mealDao.add(meal);
+        } else {
+            meal.setId(Integer.parseInt(id));
+            log.debug("trying to edit meal");
+            mealDao.edit(meal);
+        }
+
+        response.sendRedirect("meals");
     }
 }
