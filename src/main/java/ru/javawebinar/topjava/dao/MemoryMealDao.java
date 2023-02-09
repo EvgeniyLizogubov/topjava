@@ -43,7 +43,7 @@ public class MemoryMealDao implements MealDao {
 
     @Override
     public Meal edit(Meal meal) {
-        mealRepositoryMap.put(meal.getId(), meal);
+        mealRepositoryMap.replace(meal.getId(), meal);
         return meal;
     }
 
