@@ -14,6 +14,10 @@
         .excess {
             color: red;
         }
+
+        .dateTime {
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -21,6 +25,29 @@
     <h3><a href="index.html">Home</a></h3>
     <hr/>
     <h2>Meals</h2>
+    <form method="get" action="meals">
+        <dl class="dateTime">
+            <dt>От даты (включая)</dt>
+            <dd><input type="date" name="startDate"></dd>
+        </dl>
+        <dl class="dateTime">
+            <dt>До даты (включая)</dt>
+            <dd><input type="date"  name="endDate"></dd>
+        </dl>
+        <dl class="dateTime">
+            <dt>От времени (включая)</dt>
+            <dd><input type="time" name="startTime"></dd>
+        </dl>
+        <dl class="dateTime">
+            <dt>До времени (исключая)</dt>
+            <dd><input type="time" name="endTime"></dd>
+        </dl>
+        <br>
+        <button type="button">Отменить</button>
+        <button type="submit">Отфильтровать</button>
+    </form>
+    <br>
+    <br>
     <a href="meals?action=create">Add Meal</a>
     <br><br>
     <table border="1" cellpadding="8" cellspacing="0">

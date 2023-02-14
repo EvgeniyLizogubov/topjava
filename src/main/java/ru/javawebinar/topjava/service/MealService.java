@@ -12,7 +12,7 @@ import static ru.javawebinar.topjava.util.ValidationUtil.checkNotFoundWithId;
 @Service
 public class MealService {
 
-    private MealRepository repository;
+    private final MealRepository repository;
 
     @Autowired
     public MealService(MealRepository repository) {

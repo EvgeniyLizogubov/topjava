@@ -23,10 +23,6 @@ public class Meal extends AbstractNamedEntity {
         this.userId = userId;
     }
 
-//    public Integer getId() {
-//        return id;
-//    }
-
     public void setId(Integer id) {
         this.id = id;
     }
@@ -34,10 +30,6 @@ public class Meal extends AbstractNamedEntity {
     public LocalDateTime getDateTime() {
         return dateTime;
     }
-
-//    public String getDescription() {
-//        return description;
-//    }
 
     public int getCalories() {
         return calories;

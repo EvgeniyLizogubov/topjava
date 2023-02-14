@@ -21,7 +21,7 @@ import static ru.javawebinar.topjava.web.SecurityUtil.authUserId;
 @Controller
 public class MealRestController {
     protected final Logger log = LoggerFactory.getLogger(getClass());
-    private MealService service;
+    private final MealService service;
 
     @Autowired
     public MealRestController(MealService service) {
@@ -33,9 +33,9 @@ public class MealRestController {
         return MealsUtil.getTos(service.getAll(authUserId()), authUserCaloriesPerDay());
     }
 
-    public List<MealTo> getAllByFilter(LocalDate startData, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
+    public List<MealTo> getAllByFilter(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
         log.info("getAll");
-        return MealsUtil.getFilteredTos(service.getAll(authUserId()), authUserCaloriesPerDay(), startTime, endTime);
+        return MealsUtil.getFilteredTos(service.getAll(authUserId()), authUserCaloriesPerDay(), startDate, endDate, startTime, endTime);
     }
 
     public Meal get(int id) {
