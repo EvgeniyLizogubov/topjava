@@ -23,36 +23,25 @@ public class InMemoryUserRepository implements UserRepository {
     @Override
     public boolean delete(int id) {
         log.info("delete {}", id);
-        try {
-            return repository.remove(id) != null;
-        } catch (NullPointerException e) {
-            return false;
-        }
+        return repository.remove(id) != null;
     }
 
     @Override
     public User save(User user) {
         log.info("save {}", user);
-        try {
-            if(user.isNew()) {
-                user.setId(counter.incrementAndGet());
-                repository.put(user.getId(), user);
-                return user;
-            }
-            return repository.computeIfPresent(user.getId(), (id, oldUser) -> user);
-        } catch (NullPointerException e) {
-            return null;
+        if (user == null) return null;
+        if (user.isNew()) {
+            user.setId(counter.incrementAndGet());
+            repository.put(user.getId(), user);
+            return user;
         }
+        return repository.computeIfPresent(user.getId(), (id, oldUser) -> user);
     }
 
     @Override
     public User get(int id) {
         log.info("get {}", id);
-        try {
-            return repository.get(id);
-        } catch (NullPointerException e) {
-            return null;
-        }
+        return repository.get(id);
     }
 
     @Override
@@ -68,6 +57,6 @@ public class InMemoryUserRepository implements UserRepository {
         log.info("getByEmail {}", email);
         return repository.values().stream()
                 .filter(user -> user.getEmail().equals(email))
-                .findFirst().get();
+                .findFirst().orElse(null);
     }
 }

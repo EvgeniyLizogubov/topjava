@@ -5,10 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.model.Role;
-import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.web.meal.MealRestController;
-import ru.javawebinar.topjava.web.user.AdminRestController;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -18,23 +15,24 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 public class MealServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
-
-    private AdminRestController adminUserController;
+    private ConfigurableApplicationContext appCtx;
     private MealRestController mealRestController;
 
     @Override
     public void init() {
-        try(ConfigurableApplicationContext appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml")) {
-            adminUserController = appCtx.getBean(AdminRestController.class);
-            adminUserController.create(new User(null, "userName", "email@mail.ru", "password", Role.ADMIN));
-            mealRestController = appCtx.getBean(MealRestController.class);
-        }
+        appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml");
+        mealRestController = appCtx.getBean(MealRestController.class);
+    }
+
+    @Override
+    public void destroy() {
+        appCtx.close();
+        super.destroy();
     }
 
     @Override
@@ -45,8 +43,7 @@ public class MealServlet extends HttpServlet {
         Meal meal = new Meal(id.isEmpty() ? null : Integer.valueOf(id),
                 request.getParameter("description"),
                 LocalDateTime.parse(request.getParameter("dateTime")),
-                Integer.parseInt(request.getParameter("calories")),
-                SecurityUtil.authUserId());
+                Integer.parseInt(request.getParameter("calories")));
 
         log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
         if (meal.isNew()) {
@@ -71,19 +68,23 @@ public class MealServlet extends HttpServlet {
             case "create":
             case "update":
                 final Meal meal = "create".equals(action) ?
-                        new Meal("", LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), 1000, SecurityUtil.authUserId()) :
+                        new Meal("", LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), 1000) :
                         mealRestController.get(getId(request));
                 request.setAttribute("meal", meal);
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
+            case "allByFilters":
+                log.info("getAllByFilters");
+                request.setAttribute("meals", mealRestController.getAllByFilters(getDate(request, "startDate"),
+                        getDate(request, "endDate"),
+                        getTime(request, "startTime"),
+                        getTime(request, "endTime")));
+                request.getRequestDispatcher("/meals.jsp").forward(request, response);
+                break;
             case "all":
             default:
                 log.info("getAll");
-                request.setAttribute("meals", mealRestController
-                        .getAllByFilter(getDate(request, "startDate"),
-                                getDate(request, "endDate"),
-                                getTime(request, "startTime"),
-                                getTime(request, "endTime")));
+                request.setAttribute("meals", mealRestController.getAll());
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
         }
@@ -95,18 +96,18 @@ public class MealServlet extends HttpServlet {
     }
 
     private LocalDate getDate(HttpServletRequest request, String parameterDate) {
-        try {
-            return LocalDate.parse(request.getParameter(parameterDate));
-        } catch (DateTimeParseException | NullPointerException e) {
-            return parameterDate.equals("startDate") ? LocalDate.MIN : LocalDate.MAX;
+        String date = request.getParameter(parameterDate);
+        if (date != null && !date.equals("")) {
+            return LocalDate.parse(date);
         }
+        return null;
     }
 
     private LocalTime getTime(HttpServletRequest request, String parameterTime) {
-        try {
-            return LocalTime.parse(request.getParameter(parameterTime));
-        } catch (DateTimeParseException | NullPointerException e) {
-            return parameterTime.equals("startTime") ? LocalTime.MIN : LocalTime.MAX;
+        String time = request.getParameter(parameterTime);
+        if (time != null && !time.equals("")) {
+            return LocalTime.parse(time);
         }
+        return null;
     }
 }

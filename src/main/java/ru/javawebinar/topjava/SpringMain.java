@@ -9,6 +9,7 @@ import ru.javawebinar.topjava.web.meal.MealRestController;
 import ru.javawebinar.topjava.web.user.AdminRestController;
 
 import java.time.LocalDateTime;
+import java.time.Month;
 import java.util.Arrays;
 
 public class SpringMain {
@@ -19,9 +20,6 @@ public class SpringMain {
             AdminRestController adminUserController = appCtx.getBean(AdminRestController.class);
             adminUserController.create(new User(null, "userName", "email@mail.ru", "password", Role.ADMIN));
             MealRestController mealRestController = appCtx.getBean(MealRestController.class);
-            mealRestController.getAll().forEach(System.out::println);
-            mealRestController.create(new Meal("Чебупели", LocalDateTime.now(), 666, 2));
-            mealRestController.delete(9);
             mealRestController.getAll().forEach(System.out::println);
         }
     }

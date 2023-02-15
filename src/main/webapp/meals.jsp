@@ -26,24 +26,24 @@
     <hr/>
     <h2>Meals</h2>
     <form method="get" action="meals">
+        <input type="hidden" name="action" value="allByFilters">
         <dl class="dateTime">
             <dt>От даты (включая)</dt>
-            <dd><input type="date" name="startDate"></dd>
+            <dd><input type="date" name="startDate" value="${param.startDate}" id="startDate"></dd>
         </dl>
         <dl class="dateTime">
             <dt>До даты (включая)</dt>
-            <dd><input type="date"  name="endDate"></dd>
+            <dd><input type="date" name="endDate" value="${param.endDate}"></dd>
         </dl>
         <dl class="dateTime">
             <dt>От времени (включая)</dt>
-            <dd><input type="time" name="startTime"></dd>
+            <dd><input type="time" name="startTime" value="${param.startTime}"></dd>
         </dl>
         <dl class="dateTime">
             <dt>До времени (исключая)</dt>
-            <dd><input type="time" name="endTime"></dd>
+            <dd><input type="time" name="endTime" value="${param.endTime}"></dd>
         </dl>
         <br>
-        <button type="button">Отменить</button>
         <button type="submit">Отфильтровать</button>
     </form>
     <br>
