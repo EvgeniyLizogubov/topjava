@@ -9,8 +9,6 @@ import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +30,6 @@ public class InMemoryMealRepository implements MealRepository {
     public Meal save(Meal meal, int userId) {
         log.info("save {} by user with id {}", meal, userId);
 
-        if (meal == null) return null;
         if (meal.isNew()) {
             meal.setId(counter.incrementAndGet());
             meal.setUserId(userId);
@@ -53,25 +50,14 @@ public class InMemoryMealRepository implements MealRepository {
     public boolean delete(int id, int userId) {
         log.info("delete {} by user with id {}", id, userId);
         Meal meal = repository.get(id);
-        if (meal == null || meal.getUserId() != userId) return false;
-        return repository.remove(id) != null;
+        return (meal != null && meal.getUserId() == userId && repository.remove(id) != null);
     }
 
     @Override
     public Meal get(int id, int userId) {
         log.info("get {} by user with id {}", id, userId);
         Meal meal = repository.get(id);
-        if (meal == null || meal.getUserId() != userId) return null;
-        return meal;
-    }
-
-    @Override
-    public List<Meal> getAll(int userId) {
-        log.info("getAllByFilters by user with id {}", userId);
-        return repository.values().stream()
-                .filter(meal -> meal.getUserId() == userId)
-                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
-                .collect(Collectors.toList());
+        return (meal == null || meal.getUserId() != userId ? null : meal);
     }
 
     @Override

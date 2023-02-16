@@ -33,10 +33,6 @@ public class MealService {
         return checkNotFoundWithId(repository.get(id, userId), id);
     }
 
-    public List<Meal> getAll(int userId) {
-        return repository.getAll(userId);
-    }
-
     public List<Meal> getAllByFilters(int userId, LocalDate startDate, LocalDate endDate) {
         return repository.getAllByFilters(userId, startDate, endDate);
     }
