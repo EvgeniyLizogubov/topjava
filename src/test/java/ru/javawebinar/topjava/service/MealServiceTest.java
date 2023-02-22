@@ -9,14 +9,14 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.SqlConfig;
 import org.springframework.test.context.junit4.SpringRunner;
-import ru.javawebinar.topjava.MealTestDate;
+import ru.javawebinar.topjava.MealTestData;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.util.List;
 
 import static org.junit.Assert.assertThrows;
-import static ru.javawebinar.topjava.MealTestDate.*;
+import static ru.javawebinar.topjava.MealTestData.*;
 
 @ContextConfiguration({
         "classpath:spring/spring-app.xml",
@@ -38,7 +38,7 @@ public class MealServiceTest {
     @Test
     public void get() {
         Meal meal = service.get(USER_MEAL_ID, USER_ID);
-        assertMatch(meal, MealTestDate.userMeal);
+        assertMatch(meal, MealTestData.userMeal);
     }
 
     @Test
@@ -69,14 +69,14 @@ public class MealServiceTest {
 
     @Test
     public void getBetweenInclusive() {
-        List<Meal> meals = service.getBetweenInclusive(adminMeal100010.getDate(), adminMeal100011.getDate(), ADMIN_ID);
-        assertMatch(meals, adminMeal100011, adminMeal100010);
+        List<Meal> meals = service.getBetweenInclusive(adminMeal.getDate(), adminMeal.getDate(), ADMIN_ID);
+        assertMatch(meals, adminMeal);
     }
 
     @Test
     public void getAll() {
         List<Meal> all = service.getAll(ADMIN_ID);
-        assertMatch(all, adminMeal100011, adminMeal100010);
+        assertMatch(all, nextAdminMeal, adminMeal);
     }
 
     @Test
@@ -107,6 +107,5 @@ public class MealServiceTest {
         Meal newMeal = getNew();
         newMeal.setDateTime(userMeal.getDateTime());
         assertThrows(DataAccessException.class, () -> service.create(newMeal, USER_ID));
-
     }
 }

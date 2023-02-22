@@ -9,7 +9,7 @@ import java.util.Arrays;
 import static org.assertj.core.api.Assertions.assertThat;
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 
-public class MealTestDate {
+public class MealTestData {
 
     public static final int USER_ID = START_SEQ;
     public static final int ADMIN_ID = START_SEQ + 1;
@@ -17,8 +17,8 @@ public class MealTestDate {
     public static final int NOT_FOUND = START_SEQ + 100;
 
     public static final Meal userMeal = new Meal(USER_MEAL_ID, LocalDateTime.of(2020, Month.JANUARY, 30, 10, 0), "Завтрак", 500);
-    public static final Meal adminMeal100010 = new Meal(100010, LocalDateTime.of(2015, Month.JUNE, 1, 14, 0), "Админ ланч", 510);
-    public static final Meal adminMeal100011 = new Meal(100011, LocalDateTime.of(2015, Month.JUNE, 1, 21, 0), "Админ ужин", 1500);
+    public static final Meal adminMeal = new Meal(USER_MEAL_ID + 2, LocalDateTime.of(2015, Month.JUNE, 1, 14, 0), "Админ ланч", 510);
+    public static final Meal nextAdminMeal = new Meal(USER_MEAL_ID + 3, LocalDateTime.of(2015, Month.JUNE, 2, 21, 0), "Админ ужин", 1500);
 
     public static Meal getNew() {
         return new Meal(null, LocalDateTime.of(2020, Month.AUGUST, 30, 16, 20), "Шавуха", 666);
