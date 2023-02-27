@@ -44,8 +44,14 @@ public class User extends AbstractNamedEntity {
     private Date registered = new Date();
 
     @Enumerated(EnumType.STRING)
-    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"),
-            uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "role"}, name = "uk_user_role")})
+    @CollectionTable(
+            name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id"),
+            uniqueConstraints = {@UniqueConstraint(
+                    columnNames = {"user_id", "role"},
+                    name = "uk_user_role"
+            )}
+    )
     @Column(name = "role")
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles;

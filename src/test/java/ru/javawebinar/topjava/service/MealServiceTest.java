@@ -1,8 +1,12 @@
 package ru.javawebinar.topjava.service;
 
-import org.junit.Ignore;
+import org.junit.AfterClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Stopwatch;
+import org.junit.runner.Description;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.test.context.ContextConfiguration;
@@ -14,8 +18,12 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertThrows;
+import static org.slf4j.LoggerFactory.getLogger;
 import static ru.javawebinar.topjava.MealTestData.*;
 import static ru.javawebinar.topjava.UserTestData.ADMIN_ID;
 import static ru.javawebinar.topjava.UserTestData.USER_ID;
@@ -26,8 +34,25 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 })
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
-@Ignore
 public class MealServiceTest {
+
+    private static final Logger log = getLogger(MealServiceTest.class);
+    private static final List<String> timeRunTests = new LinkedList<>();
+
+    private static void logInfo(Description description, long nanos) {
+        String testName = description.getMethodName();
+        timeRunTests.add(String.format("Test %s - %d ms",testName, TimeUnit.NANOSECONDS.toMillis(nanos)));
+        log.info(String.format("Test %s %s, spent %d microseconds",
+                testName, "finished", TimeUnit.NANOSECONDS.toMillis(nanos)));
+    }
+
+    @Rule
+    public Stopwatch stopwatch = new Stopwatch() {
+        @Override
+        protected void finished(long nanos, Description description) {
+            logInfo(description, nanos);
+        }
+    };
 
     @Autowired
     private MealService service;
@@ -109,5 +134,10 @@ public class MealServiceTest {
     @Test
     public void getBetweenWithNullDates() {
         MEAL_MATCHER.assertMatch(service.getBetweenInclusive(null, null, USER_ID), meals);
+    }
+
+    @AfterClass
+    public static void printTestsResult() {
+        timeRunTests.forEach(System.out::println);
     }
 }
