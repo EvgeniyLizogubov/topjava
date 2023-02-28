@@ -39,23 +39,30 @@ public class MealServiceTest {
     private static final Logger log = getLogger(MealServiceTest.class);
     private static final List<String> timeRunTests = new LinkedList<>();
 
-    private static void logInfo(Description description, long nanos) {
-        String testName = description.getMethodName();
-        timeRunTests.add(String.format("Test %s - %d ms",testName, TimeUnit.NANOSECONDS.toMillis(nanos)));
-        log.info(String.format("Test %s %s, spent %d microseconds",
-                testName, "finished", TimeUnit.NANOSECONDS.toMillis(nanos)));
-    }
-
     @Rule
     public Stopwatch stopwatch = new Stopwatch() {
+
         @Override
         protected void finished(long nanos, Description description) {
             logInfo(description, nanos);
+        }
+
+        private void logInfo(Description description, long nanos) {
+            long ms = TimeUnit.NANOSECONDS.toMillis(nanos);
+            String testName = description.getMethodName();
+            timeRunTests.add(String.format("%-30s %d ms",testName, ms));
+            log.info(String.format("Test %s %s, spent %d microseconds",
+                    testName, "finished", ms));
         }
     };
 
     @Autowired
     private MealService service;
+
+    @AfterClass
+    public static void printTestsResult() {
+        timeRunTests.forEach(log::info);
+    }
 
     @Test
     public void delete() {
@@ -134,10 +141,5 @@ public class MealServiceTest {
     @Test
     public void getBetweenWithNullDates() {
         MEAL_MATCHER.assertMatch(service.getBetweenInclusive(null, null, USER_ID), meals);
-    }
-
-    @AfterClass
-    public static void printTestsResult() {
-        timeRunTests.forEach(System.out::println);
     }
 }
