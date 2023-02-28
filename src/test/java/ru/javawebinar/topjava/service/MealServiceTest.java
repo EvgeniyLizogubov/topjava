@@ -18,8 +18,6 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertThrows;
@@ -35,9 +33,11 @@ import static ru.javawebinar.topjava.UserTestData.USER_ID;
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
-
     private static final Logger log = getLogger(MealServiceTest.class);
-    private static final List<String> timeRunTests = new LinkedList<>();
+    private static final StringBuffer timeRunTests = new StringBuffer("Test passing time:");
+
+    @Autowired
+    private MealService service;
 
     @Rule
     public Stopwatch stopwatch = new Stopwatch() {
@@ -50,18 +50,15 @@ public class MealServiceTest {
         private void logInfo(Description description, long nanos) {
             long ms = TimeUnit.NANOSECONDS.toMillis(nanos);
             String testName = description.getMethodName();
-            timeRunTests.add(String.format("%-30s %d ms",testName, ms));
+            timeRunTests.append(String.format("\n%-30s %d ms",testName, ms));
             log.info(String.format("Test %s %s, spent %d microseconds",
                     testName, "finished", ms));
         }
     };
 
-    @Autowired
-    private MealService service;
-
     @AfterClass
     public static void printTestsResult() {
-        timeRunTests.forEach(log::info);
+        log.info(timeRunTests.toString());
     }
 
     @Test
