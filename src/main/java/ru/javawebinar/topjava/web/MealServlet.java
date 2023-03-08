@@ -22,17 +22,13 @@ import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalDate;
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
 
 public class MealServlet extends HttpServlet {
-
-    private final ConfigurableApplicationContext springContext;
+    private ConfigurableApplicationContext springContext;
     private MealRestController mealController;
-
-    {
-        springContext = new ClassPathXmlApplicationContext("spring/spring-app.xml", "spring/spring-db.xml");
-        springContext.getEnvironment().setActiveProfiles(Profiles.REPOSITORY_IMPLEMENTATION, Profiles.HSQL_DB);
-    }
 
     @Override
     public void init() {
+        System.setProperty("spring.profiles.active", String.format("%s, %s", Profiles.REPOSITORY_IMPLEMENTATION, Profiles.getActiveDbProfile()));
+        springContext = new ClassPathXmlApplicationContext("spring/spring-app.xml", "spring/spring-db.xml");
         mealController = springContext.getBean(MealRestController.class);
     }
 
