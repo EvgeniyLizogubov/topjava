@@ -20,8 +20,8 @@ CREATE UNIQUE INDEX users_unique_email_idx ON users (email);
 CREATE TABLE user_role
 (
     user_id INTEGER NOT NULL,
-    role    VARCHAR NOT NULL,
-    CONSTRAINT user_roles_idx UNIQUE (user_id, role),
+    roles   VARCHAR NOT NULL,
+    CONSTRAINT user_roles_idx UNIQUE (user_id, roles),
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 

@@ -54,8 +54,8 @@ public class User extends AbstractNamedEntity {
     @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"),
-            uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "role"}, name = "uk_user_role")})
-    @Column(name = "role")
+            uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "roles"}, name = "uk_user_role")})
+    @Column(name = "roles")
     @ElementCollection(fetch = FetchType.EAGER)
 //    @Fetch(FetchMode.SUBSELECT)
     @BatchSize(size = 200)
