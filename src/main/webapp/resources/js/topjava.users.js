@@ -5,6 +5,16 @@ const ctx = {
     ajaxUrl: userAjaxUrl
 };
 
+function enable(checkbox, id) {
+    $.ajax({
+        type: "POST",
+        url: ctx.ajaxUrl + id,
+        data: "enable=" + checkbox.checked
+    }).done(function () {
+        $("#" + id).css("opacity", (checkbox.checked ? 1 : 0.3));
+    });
+}
+
 // $(document).ready(function () {
 $(function () {
     makeEditable(
