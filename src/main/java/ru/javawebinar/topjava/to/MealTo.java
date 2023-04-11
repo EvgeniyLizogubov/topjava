@@ -14,7 +14,7 @@ public class MealTo extends BaseTo implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
     @NotNull
     private LocalDateTime dateTime;
 
@@ -78,12 +78,14 @@ public class MealTo extends BaseTo implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         MealTo mealTo = (MealTo) o;
-        return calories == mealTo.calories &&
-                excess == mealTo.excess &&
+        return excess == mealTo.excess &&
+                Objects.equals(calories, mealTo.calories) &&
                 Objects.equals(id, mealTo.id) &&
                 Objects.equals(dateTime, mealTo.dateTime) &&
                 Objects.equals(description, mealTo.description);
     }
+
+
 
     @Override
     public int hashCode() {
