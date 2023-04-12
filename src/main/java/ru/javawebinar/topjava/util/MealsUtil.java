@@ -16,10 +16,6 @@ public class MealsUtil {
     private MealsUtil() {
     }
 
-    public static Meal createNewFromTo(MealTo mealTo) {
-        return new Meal(null, mealTo.getDateTime(), mealTo.getDescription(), mealTo.getCalories());
-    }
-
     public static List<MealTo> getTos(Collection<Meal> meals, int caloriesPerDay) {
         return filterByPredicate(meals, caloriesPerDay, meal -> true);
     }
