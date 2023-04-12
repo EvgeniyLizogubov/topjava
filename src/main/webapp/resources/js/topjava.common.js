@@ -24,10 +24,14 @@ function updateRow(id) {
     $.get(ctx.ajaxUrl + id, function (data) {
         $.each(data, function (key, value) {
                 form.find("input[name='" + key + "']")
-                    .val(key === "dateTime" ? value.substring(0, 16).replace('T', ' ') : value);
+                    .val(key === "dateTime" ? formatDateTime(value, 0, 16) : value);
         });
         $('#editRow').modal();
     });
+}
+
+function formatDateTime(dateTime, startIndex, endIndex) {
+    return dateTime.replace('T', ' ').substring(startIndex, endIndex);
 }
 
 function deleteRow(id) {

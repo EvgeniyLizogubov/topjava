@@ -3,18 +3,17 @@ package ru.javawebinar.topjava.to;
 import org.hibernate.validator.constraints.Range;
 import org.springframework.format.annotation.DateTimeFormat;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.beans.ConstructorProperties;
-import java.io.Serial;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class MealTo extends BaseTo implements Serializable {
-    @Serial
-    private static final long serialVersionUID = 1L;
+import static ru.javawebinar.topjava.util.DateTimeUtil.DATE_TIME_PATTERN;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm")
+public class MealTo extends BaseTo {
+    @DateTimeFormat(pattern = DATE_TIME_PATTERN)
     @NotNull
     private LocalDateTime dateTime;
 
@@ -26,7 +25,6 @@ public class MealTo extends BaseTo implements Serializable {
     @NotNull
     private Integer calories;
 
-    @NotNull
     private boolean excess;
 
     public MealTo() {
@@ -84,8 +82,6 @@ public class MealTo extends BaseTo implements Serializable {
                 Objects.equals(dateTime, mealTo.dateTime) &&
                 Objects.equals(description, mealTo.description);
     }
-
-
 
     @Override
     public int hashCode() {
