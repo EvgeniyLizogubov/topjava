@@ -5,11 +5,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import ru.javawebinar.topjava.UserTestData;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
+import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -97,6 +99,20 @@ class AdminRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    void updateUnvalidated() throws Exception {
+        User user = userService.get(USER_ID);
+        User updated = new User();
+        updated.setId(USER_ID);
+        perform(MockMvcRequestBuilders.put(REST_URL + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(admin))
+                .content(JsonUtil.writeValue(updated)))
+                .andExpect(status().isUnprocessableEntity());
+
+        USER_MATCHER.assertMatch(userService.get(USER_ID), user);
+    }
+
+    @Test
     void createWithLocation() throws Exception {
         User newUser = getNew();
         ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)
@@ -110,6 +126,33 @@ class AdminRestControllerTest extends AbstractControllerTest {
         newUser.setId(newId);
         USER_MATCHER.assertMatch(created, newUser);
         USER_MATCHER.assertMatch(userService.get(newId), newUser);
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void createWithSameEmail() throws Exception {
+        User newUser = getNew();
+        newUser.setEmail(admin.getEmail());
+        perform(MockMvcRequestBuilders.post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(admin))
+                .content(jsonWithPassword(newUser, newUser.getPassword())))
+                .andExpect(status().isConflict());
+
+        USER_MATCHER.assertMatch(userService.get(ADMIN_ID), admin);
+        USER_MATCHER.assertMatch(userService.getAll(), users);
+    }
+
+    @Test
+    void createUnvalidated() throws Exception {
+        User newUser = new User();
+        perform(MockMvcRequestBuilders.post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(admin))
+                .content(JsonUtil.writeValue(newUser)))
+                .andExpect(status().isUnprocessableEntity());
+
+        USER_MATCHER.assertMatch(userService.getAll(), users);
     }
 
     @Test

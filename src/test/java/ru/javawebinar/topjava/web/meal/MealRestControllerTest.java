@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
@@ -81,6 +83,18 @@ class MealRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    void updateUnvalidated() throws Exception {
+        Meal meal = mealService.get(MEAL1_ID, USER_ID);
+        Meal updated = new Meal();
+        perform(MockMvcRequestBuilders.put(REST_URL + MEAL1_ID).contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(user))
+                .content(JsonUtil.writeValue(updated)))
+                .andExpect(status().isUnprocessableEntity());
+
+        MEAL_MATCHER.assertMatch(mealService.get(MEAL1_ID, USER_ID), meal);
+    }
+
+    @Test
     void createWithLocation() throws Exception {
         Meal newMeal = getNew();
         ResultActions action = perform(MockMvcRequestBuilders.post(REST_URL)
@@ -94,6 +108,33 @@ class MealRestControllerTest extends AbstractControllerTest {
         newMeal.setId(newId);
         MEAL_MATCHER.assertMatch(created, newMeal);
         MEAL_MATCHER.assertMatch(mealService.get(newId, USER_ID), newMeal);
+    }
+
+    @Test
+    void createUnvalidated() throws Exception {
+        Meal newMeal = new Meal();
+        perform(MockMvcRequestBuilders.post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(user))
+                .content(JsonUtil.writeValue(newMeal)))
+                .andExpect(status().isUnprocessableEntity());
+
+        MEAL_MATCHER.assertMatch(mealService.getAll(USER_ID), meals);
+    }
+
+    @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void createWithSameDateTime() throws Exception {
+        Meal newMeal = getNew();
+        newMeal.setDateTime(meal1.getDateTime());
+        perform(MockMvcRequestBuilders.post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(user))
+                .content(JsonUtil.writeValue(newMeal)))
+                .andExpect(status().isConflict());
+
+        MEAL_MATCHER.assertMatch(mealService.get(MEAL1_ID, USER_ID), meal1);
+        MEAL_MATCHER.assertMatch(mealService.getAll(USER_ID), meals);
     }
 
     @Test

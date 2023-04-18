@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import ru.javawebinar.topjava.model.User;
 import ru.javawebinar.topjava.service.UserService;
 import ru.javawebinar.topjava.to.UserTo;
@@ -65,6 +67,32 @@ class ProfileRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    @Transactional(propagation = Propagation.NEVER)
+    void registerWithSameEmail() throws Exception {
+        UserTo newTo = new UserTo(null, "newName", admin.getEmail(), "newPassword", 1500);
+        perform(MockMvcRequestBuilders.post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(newTo)))
+                .andDo(print())
+                .andExpect(status().isConflict());
+
+        USER_MATCHER.assertMatch(userService.get(ADMIN_ID), admin);
+        USER_MATCHER.assertMatch(userService.getAll(), users);
+    }
+
+    @Test
+    void registerUnvalidated() throws Exception {
+        UserTo newTo = new UserTo();
+        perform(MockMvcRequestBuilders.post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(newTo)))
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity());
+
+        USER_MATCHER.assertMatch(userService.getAll(), users);
+    }
+
+    @Test
     void update() throws Exception {
         UserTo updatedTo = new UserTo(null, "newName", "user@yandex.ru", "newPassword", 1500);
         perform(MockMvcRequestBuilders.put(REST_URL).contentType(MediaType.APPLICATION_JSON)
@@ -74,6 +102,20 @@ class ProfileRestControllerTest extends AbstractControllerTest {
                 .andExpect(status().isNoContent());
 
         USER_MATCHER.assertMatch(userService.get(USER_ID), UsersUtil.updateFromTo(new User(user), updatedTo));
+    }
+
+    @Test
+    void updateUnvalidated() throws Exception {
+        User oldUser = userService.get(USER_ID);
+        UserTo updatedTo = new UserTo();
+        updatedTo.setId(USER_ID);
+        perform(MockMvcRequestBuilders.put(REST_URL).contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(user))
+                .content(JsonUtil.writeValue(updatedTo)))
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity());
+
+        USER_MATCHER.assertMatch(userService.get(USER_ID), oldUser);
     }
 
     @Test

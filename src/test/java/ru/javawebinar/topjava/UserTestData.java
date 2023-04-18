@@ -31,6 +31,8 @@ public class UserTestData {
     public static final User admin = new User(ADMIN_ID, "Admin", "admin@gmail.com", "admin", 1900, Role.ADMIN, Role.USER);
     public static final User guest = new User(GUEST_ID, "Guest", "guest@gmail.com", "guest", 2000);
 
+    public static final List<User> users = List.of(admin, guest, user);
+
     static {
         user.setMeals(meals);
         admin.setMeals(List.of(adminMeal2, adminMeal1));

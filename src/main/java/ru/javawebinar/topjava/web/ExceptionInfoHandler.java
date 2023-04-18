@@ -7,6 +7,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,12 +21,21 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.util.Map;
+
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
 
 @RestControllerAdvice(annotations = RestController.class)
 @Order(Ordered.HIGHEST_PRECEDENCE + 5)
 public class ExceptionInfoHandler {
     private static final Logger log = LoggerFactory.getLogger(ExceptionInfoHandler.class);
+
+    private static final Map<String, String> FIELD_NAMES = Map.of("dateTime", "Date/Time",
+            "description", "Description",
+            "calories", "Calories",
+            "name", "Name",
+            "email", "Email",
+            "password", "Password");
 
     //  http://stackoverflow.com/a/22358422/548473
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
@@ -41,7 +51,8 @@ public class ExceptionInfoHandler {
     }
 
     @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)  // 422
-    @ExceptionHandler({IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
+    @ExceptionHandler({IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class, MethodArgumentNotValidException.class})
     public ErrorInfo validationError(HttpServletRequest req, Exception e) {
         return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
     }
@@ -60,6 +71,26 @@ public class ExceptionInfoHandler {
         } else {
             log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
         }
-        return new ErrorInfo(req.getRequestURL(), errorType, rootCause.toString());
+
+        String rootCauseMsg = rootCause.getMessage();
+        if (e instanceof DataIntegrityViolationException) {
+            if (rootCauseMsg.contains("email")) {
+                return new ErrorInfo(req.getRequestURL(), errorType, "User with this email already exists");
+            }
+
+            if (rootCauseMsg.contains("date_time")) {
+                return new ErrorInfo(req.getRequestURL(), errorType, "You already have meal with this date/time");
+            }
+        } else {
+            if (rootCauseMsg != null) {
+                for (Map.Entry<String, String> entry : FIELD_NAMES.entrySet()) {
+                    if (rootCauseMsg.contains(entry.getKey())) {
+                        rootCauseMsg = rootCauseMsg.replace(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
+            return new ErrorInfo(req.getRequestURL(), errorType, rootCauseMsg);
+        }
+        return null;
     }
 }
