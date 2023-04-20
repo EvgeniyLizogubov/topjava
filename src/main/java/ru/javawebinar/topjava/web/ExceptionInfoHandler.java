@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import ru.javawebinar.topjava.util.validation.ValidationUtil;
 import ru.javawebinar.topjava.util.exception.*;
+import ru.javawebinar.topjava.util.validation.ValidationUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
